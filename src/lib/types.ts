@@ -45,3 +45,9 @@ export interface InpaintData {
 export interface IProvider extends IEventEmitter<ProviderEvents> {
   inpaint(data: InpaintData): Promise<InitialResponse>
 }
+
+export interface LeaferNodeProps {
+  provider: 'aliyun'
+  providerProps?: any
+  initImageUrl?: string
+}

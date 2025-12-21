@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 import type { Node, Edge } from '@vue-flow/core'
 import { VueFlow } from '@vue-flow/core'
 
@@ -12,10 +12,16 @@ import DropzoneBackground from './components/DropzoneBackground.vue'
 import ToolsPanel from './components/ToolsPanel.vue'
 import { ElButton } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useDesignCanvas, type DesignContext } from './hooks/canvas'
+import type { LeaferNodeProps } from './lib/types'
 
 // these are our nodes
 
-const nodes = ref<Node[]>([
+const context = reactive<DesignContext>({
+  activeNodeId: null,
+})
+
+const nodes = ref<Node<LeaferNodeProps>[]>([
   // // an input node, specified by using `type: 'input'`
   // {
   //   id: '1',
@@ -93,8 +99,6 @@ const edges = ref<Edge[]>([
   // },
 ])
 
-const onCalled = () => {}
-
 const onSuccess = ({ id, url }: { id: string; url: string }) => {
   const newId = crypto.randomUUID()
 
@@ -102,7 +106,7 @@ const onSuccess = ({ id, url }: { id: string; url: string }) => {
     id: newId,
     type: 'leafer',
     position: { x: 900, y: 200 },
-    data: { initImageUrl: url },
+    data: { provider: 'aliyun', initImageUrl: url },
   })
 
   edges.value.push({
@@ -119,27 +123,39 @@ const onAdd = () => {
     id: newId,
     type: 'leafer',
     position: { x: 900, y: 200 },
-    data: { file: null },
+    data: { provider: 'aliyun' },
   })
+
+  context.activeNodeId = null
 }
+
+const onNodeClick = (id: string) => {
+  if (context.activeNodeId === id) {
+    context.activeNodeId = null
+  } else {
+    context.activeNodeId = id
+  }
+}
+
+const onPaneClick = () => {
+  context.activeNodeId = null
+}
+
+useDesignCanvas({
+  context,
+})
 </script>
 
 <template>
   <div class="main">
-    <VueFlow :nodes="nodes" :edges="edges">
+    <VueFlow ref="canvasRef" :nodes="nodes" :edges="edges" @pane-click="onPaneClick">
       <!-- bind your custom node type to a component by using slots, slot names are always `node-<type>` -->
       <template #node-special="specialNodeProps">
         <SpecialNode v-bind="specialNodeProps" />
       </template>
 
       <template #node-leafer="nodeProps">
-        <LeaferNode
-          v-bind="nodeProps"
-          provider="aliyun"
-          :init-image-url="nodeProps.data?.initImageUrl"
-          @called="onCalled"
-          @success="onSuccess"
-        />
+        <LeaferNode v-bind="nodeProps" @node-click="onNodeClick" @success="onSuccess" />
       </template>
 
       <!-- bind your custom edge type to a component by using slots, slot names are always `edge-<type>` -->
@@ -150,6 +166,7 @@ const onAdd = () => {
       <ToolsPanel>
         <ElButton link :icon="Plus" @click="onAdd"> </ElButton>
       </ToolsPanel>
+
       <DropzoneBackground> </DropzoneBackground>
     </VueFlow>
   </div>
