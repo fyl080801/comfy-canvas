@@ -20,9 +20,7 @@ export class EventEmitter<T extends Record<string | symbol, any>> {
 
   off<K extends keyof T>(eventName: K, listener: T[K]) {
     if (this.eventMap[eventName]) {
-      this.eventMap[eventName] = this.eventMap[eventName].filter(
-        (item) => item !== listener
-      )
+      this.eventMap[eventName] = this.eventMap[eventName].filter((item) => item !== listener)
     }
     return this
   }

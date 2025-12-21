@@ -15,11 +15,12 @@ import { AliyunProvider } from '../lib/providers'
 Platform.image.crossOrigin = 'anonymous'
 
 const props = defineProps<
-  NodeProps & {
+  NodeProps<{
+    file?: Blob
     provider: 'aliyun'
     providerProps?: any
     initImageUrl?: string
-  }
+  }>
 >()
 
 const providers = {
@@ -39,7 +40,7 @@ const canvasNodeHeight = ref(300) // Default arbitrary height
 
 const bgRef = ref<HTMLImageElement>()
 const imageUrl = ref<string>(
-  props.initImageUrl ??
+  props.data.initImageUrl ??
     'https://raw.githubusercontent.com/CompVis/stable-diffusion/main/data/inpainting_examples/overture-creations-5sI6fQgYIuo.png',
 )
 
@@ -87,7 +88,7 @@ const setupLeafer = () => {
 
 const setupService = () => {
   const currentApi = new ApiService({
-    provider: new providers[props.provider]({ ...(props.providerProps || {}) }),
+    provider: new providers[props.data.provider]({ ...(props.data.providerProps || {}) }),
   })
 
   currentApi.on('processing', () => {})
@@ -125,31 +126,31 @@ onBeforeUnmount(() => {
   leaferRef.value?.destroy()
 })
 
-const onExport = async () => {
-  const result = await leaferRef.value?.export('file.png', {
-    screenshot: true,
-    fill: 'black',
-  })
-  console.log(result)
-}
+// const onExport = async () => {
+//   const result = await leaferRef.value?.export('file.png', {
+//     screenshot: true,
+//     fill: 'black',
+//   })
+//   console.log(result)
+// }
 
-const onCallInpaint = async () => {
-  const result = await leaferRef.value?.export('png', {
-    blob: true,
-    screenshot: true,
-    fill: 'black',
-  })
+// const onCallInpaint = async () => {
+//   const result = await leaferRef.value?.export('png', {
+//     blob: true,
+//     screenshot: true,
+//     fill: 'black',
+//   })
 
-  const uploaded = await uploadImage({
-    file: result?.data,
-  })
+//   const uploaded = await uploadImage({
+//     file: result?.data,
+//   })
 
-  api.value?.inpaint({
-    base_image_url: imageUrl.value,
-    mask_image_url: uploaded,
-    prompt: 'a cat',
-  })
-}
+//   api.value?.inpaint({
+//     base_image_url: imageUrl.value,
+//     mask_image_url: uploaded,
+//     prompt: 'a cat',
+//   })
+// }
 </script>
 
 <template>
@@ -157,14 +158,15 @@ const onCallInpaint = async () => {
     class="canvas-node"
     :style="{ width: canvasNodeWidth + 'px', height: canvasNodeHeight + 'px' }"
   >
-    <div class="title">title</div>
+    <!-- <div class="title">title</div>
     <div class="tools">
       <button @click="onExport">导出</button>
       <button @click="onCallInpaint">调用</button>
-    </div>
+    </div> -->
     <img ref="bgRef" :src="imageUrl" class="inner bg" />
     <div ref="canvasRef" class="inner nodrag nopan"></div>
-    <Handle type="source" :position="Position.Bottom" />
+    <Handle type="source" :position="Position.Left" />
+    <Handle type="target" :position="Position.Right" />
   </div>
 </template>
 
@@ -189,7 +191,7 @@ const onCallInpaint = async () => {
 
   .inner {
     position: absolute !important;
-    top: 60px; /* Adjusted to make space for the title */
+    top: 0;
     bottom: 0;
     right: 0;
     left: 0;

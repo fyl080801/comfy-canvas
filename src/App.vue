@@ -8,6 +8,10 @@ import { VueFlow } from '@vue-flow/core'
 import SpecialNode from './components/SpecialNode.vue'
 import SpecialEdge from './components/SpecialEdge.vue'
 import LeaferNode from './components/LeaferNode.vue'
+import DropzoneBackground from './components/DropzoneBackground.vue'
+import ToolsPanel from './components/ToolsPanel.vue'
+import { ElButton } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 
 // these are our nodes
 
@@ -21,14 +25,12 @@ const nodes = ref<Node[]>([
   //   // a label can property can be used for default nodes
   //   data: { label: 'Node 1' },
   // },
-
   // // default node, you can omit `type: 'default'` as it's the fallback type
   // {
   //   id: '2',
   //   position: { x: 100, y: 100 },
   //   data: { label: 'Node 2' },
   // },
-
   // // An output node, specified by using `type: 'output'`
   // {
   //   id: '3',
@@ -36,7 +38,6 @@ const nodes = ref<Node[]>([
   //   position: { x: 400, y: 200 },
   //   data: { label: 'Node 3' },
   // },
-
   // // this is a custom node
   // // we set it by using a custom type name we choose, in this example `special`
   // // the name can be freely chosen, there are no restrictions as long as it's a string
@@ -49,12 +50,11 @@ const nodes = ref<Node[]>([
   //     hello: 'world',
   //   },
   // },
-
-  {
-    id: '5',
-    type: 'leafer', // <-- this is the custom node type name
-    position: { x: 800, y: 200 },
-  },
+  // {
+  //   id: '5',
+  //   type: 'leafer', // <-- this is the custom node type name
+  //   position: { x: 800, y: 200 },
+  // },
 ])
 
 // these are our edges
@@ -95,7 +95,7 @@ const edges = ref<Edge[]>([
 
 const onCalled = () => {}
 
-const onSuccess = ({ id, url }) => {
+const onSuccess = ({ id, url }: { id: string; url: string }) => {
   const newId = crypto.randomUUID()
 
   nodes.value.push({
@@ -109,6 +109,17 @@ const onSuccess = ({ id, url }) => {
     id: crypto.randomUUID(),
     source: id,
     target: newId,
+  })
+}
+
+const onAdd = () => {
+  const newId = crypto.randomUUID()
+
+  nodes.value.push({
+    id: newId,
+    type: 'leafer',
+    position: { x: 900, y: 200 },
+    data: { file: null },
   })
 }
 </script>
@@ -135,22 +146,19 @@ const onSuccess = ({ id, url }) => {
       <template #edge-special="specialEdgeProps">
         <SpecialEdge v-bind="specialEdgeProps" />
       </template>
+
+      <ToolsPanel>
+        <ElButton link :icon="Plus" @click="onAdd"> </ElButton>
+      </ToolsPanel>
+      <DropzoneBackground> </DropzoneBackground>
     </VueFlow>
   </div>
 </template>
 
 <style>
-/* import the necessary styles for Vue Flow to work */
-@import '@vue-flow/core/dist/style.css';
-
-/* import the default theme, this is optional but generally recommended */
-@import '@vue-flow/core/dist/theme-default.css';
+@reference "tailwindcss";
 
 .main {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  @apply absolute top-0 bottom-0 left-0 right-0;
 }
 </style>

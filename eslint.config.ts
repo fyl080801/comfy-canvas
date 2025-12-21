@@ -23,7 +23,7 @@ export default defineConfigWithVueTs(
   skipFormatting,
   {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off'
-    }
-  }
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
 )

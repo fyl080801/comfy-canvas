@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 // S3 客户端配置
@@ -77,8 +77,6 @@ export async function uploadImage(options: UploadImageOptions): Promise<string> 
       Bucket: currentConfig.bucket,
       Key: fileName,
     })
-
-
 
     // return `https://s3.fyl080801.uk/${currentConfig.bucket}/${fileName}`
     // return `https://minio.fyl080801.uk/api/v1/buckets/${currentConfig.bucket}/objects/download?preview=true&prefix=${encodeURIComponent(fileName)}&version_id=null`

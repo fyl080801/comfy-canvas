@@ -4,9 +4,19 @@ import { defineConfig, ProxyOptions } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import tailwindcss from '@tailwindcss/vite'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import ElementPlus from 'unplugin-element-plus/vite'
 
-const createProxy = ({ target, rewrite }: { target: string, rewrite: string }): string | ProxyOptions => {
-
+const createProxy = ({
+  target,
+  rewrite,
+}: {
+  target: string
+  rewrite: string
+}): string | ProxyOptions => {
   return {
     target,
     changeOrigin: true,
@@ -15,12 +25,16 @@ const createProxy = ({ target, rewrite }: { target: string, rewrite: string }): 
       console.log(`[Proxy] ${p} → ${target}${newPath}`)
       return newPath
     },
-    configure: (proxy,) => {
+    configure: (proxy) => {
       proxy.on('proxyReq', (proxyReq, req, res) => {
-        console.log(`[Proxy Request] ${req.method} ${req.url} → ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`)
+        console.log(
+          `[Proxy Request] ${req.method} ${req.url} → ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`,
+        )
       })
       proxy.on('proxyRes', (proxyRes, req, res) => {
-        console.log(`[Proxy Response] ${proxyRes.statusCode} ${req.url} ← ${proxyRes.headers.server || 'unknown'}`)
+        console.log(
+          `[Proxy Response] ${proxyRes.statusCode} ${req.url} ← ${proxyRes.headers.server || 'unknown'}`,
+        )
       })
       proxy.on('error', (err, req, res) => {
         console.error(`[Proxy Error] ${req.method} ${req.url}:`, err.message)
@@ -35,22 +49,30 @@ export default defineConfig({
     vue(),
     vueJsx(),
     vueDevTools(),
+    tailwindcss(),
+    ElementPlus({}),
+    AutoImport({
+      resolvers: [ElementPlusResolver()],
+    }),
+    Components({
+      resolvers: [ElementPlusResolver()],
+    }),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   server: {
     proxy: {
       '/aliyun': createProxy({
         target: 'https://dashscope.aliyuncs.com',
-        rewrite: 'aliyun'
+        rewrite: 'aliyun',
       }),
       '/s3': createProxy({
         target: 'https://s3.fyl080801.uk',
-        rewrite: 's3'
+        rewrite: 's3',
       }),
-    }
+    },
   },
 })
