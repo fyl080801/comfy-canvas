@@ -1,4 +1,11 @@
-import type { InpaintData, IProvider, ProviderEvents, ResolutionData, TaskResponse } from './types'
+import type {
+  ExtendData,
+  InpaintData,
+  IProvider,
+  ProviderEvents,
+  ResolutionData,
+  TaskResponse,
+} from './types'
 import { type IEventEmitter } from './EventEmitter'
 
 // type ApiStatus = 'pending' | 'polling' | 'succeeded' | 'failed' | 'cancelled'
@@ -31,5 +38,9 @@ export class ApiService implements IEventEmitter<ProviderEvents> {
 
   async resolution(data: ResolutionData): Promise<void> {
     this._provider.resolution(data)
+  }
+
+  async expand(data: ExtendData): Promise<void> {
+    this._provider.expand(data)
   }
 }

@@ -225,11 +225,21 @@ onUnmounted(() => {
   </NodeToolbar>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .inner {
-  width: 100%;
-  height: 100%;
-  position: relative;
+  position: absolute !important;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 0; /* Ensure canvas is above the background image */
+  transition: top 0.3s ease; /* Add transition for smooth movement */
+}
+
+.inner {
+  // width: 100%;
+  // height: 100%;
+  // position: relative;
 
   canvas {
     display: block;
@@ -237,7 +247,9 @@ onUnmounted(() => {
     height: 100%;
   }
 }
+</style>
 
+<style>
 .draw-content {
   padding: 8px;
   width: 376px;

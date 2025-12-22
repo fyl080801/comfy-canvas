@@ -13,6 +13,7 @@ import { ElCard } from 'element-plus'
 import { type EditTypes, type NodeEmitEvents } from '../lib/types'
 import DrawEditor from './DrawEditor.vue'
 import UpscaleEditor from './UpscaleEditor.vue'
+import ExpandEditor from './ExpandEditor.vue'
 
 // u2Gh8iovZ85DpWTrLVfJVOPhYMEfTyCEyAGwM8rlMAaWhU94DduAYFuhRDnH
 
@@ -196,9 +197,11 @@ const isShowEditor = computed(() => {
 
   return (<EditTypes[]>['redraw', 'eraser']).includes(editType.value)
 })
-
 const isShowUpscale = computed(() => {
   return editType.value === 'hd'
+})
+const isShowExpand = computed(() => {
+  return editType.value === 'extend'
 })
 
 const nodeStyle = computed(() => {
@@ -236,6 +239,7 @@ useDesignNode({
 
     <DrawEditor v-if="isShowEditor"></DrawEditor>
     <UpscaleEditor v-if="isShowUpscale"></UpscaleEditor>
+    <ExpandEditor v-if="isShowExpand"></ExpandEditor>
 
     <div
       v-if="isEmpty && !processing"
@@ -322,16 +326,6 @@ useDesignNode({
 
     padding-left: 8px;
     padding-right: 8px;
-  }
-
-  .inner {
-    position: absolute !important;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    z-index: 0; /* Ensure canvas is above the background image */
-    transition: top 0.3s ease; /* Add transition for smooth movement */
   }
 
   .bg-wrapper {

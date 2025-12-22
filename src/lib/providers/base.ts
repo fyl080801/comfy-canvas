@@ -1,5 +1,6 @@
-import EventEmitter, { type IEventEmitter } from '../EventEmitter'
+import EventEmitter from '../EventEmitter'
 import type {
+  ExtendData,
   InitialResponse,
   InpaintData,
   IProvider,
@@ -13,6 +14,8 @@ export abstract class BaseProvider implements IProvider {
   abstract inpaint(data: InpaintData): Promise<InitialResponse>
 
   abstract resolution(data: ResolutionData): Promise<InitialResponse>
+
+  abstract expand(data: ExtendData): Promise<InitialResponse>
 
   dispatch<K extends keyof ProviderEvents>(eventName: K, ...args: Parameters<ProviderEvents[K]>) {
     this.listeners.emit(eventName, ...args)

@@ -89,6 +89,14 @@ export const useIsEmpty = () => {
   })
 }
 
+export const useIsProcessing = () => {
+  const { processing } = useDesignNode()
+
+  return computed(() => {
+    return processing.value
+  })
+}
+
 export const useCurrentEditType = () => {
   const { editType } = useDesignNode()
 

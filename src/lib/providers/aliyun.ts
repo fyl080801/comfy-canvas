@@ -1,5 +1,5 @@
 import { Polling } from '../polling'
-import type { InpaintData, InitialResponse, ResolutionData } from '../types'
+import type { InpaintData, InitialResponse, ResolutionData, ExtendData } from '../types'
 import { BaseProvider } from './base'
 
 const API_TOKEN = 'sk-af23e390b1d549dfbd028b7172765515'
@@ -113,6 +113,42 @@ export class AliyunProvider extends BaseProvider {
         prompt: data.prompt,
         base_image_url: data.base_image_url,
         mask_image_url: data.mask_image_url,
+      },
+    })
+
+    const response = await fetch(`/aliyun/api/v1/services/aigc/image2image/image-synthesis`, {
+      method: 'POST',
+      headers,
+      body: raw,
+      redirect: 'follow',
+    })
+
+    if (!response.ok) {
+      throw new Error(`请求失败: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+
+    this.createPollingWaitter(result)
+
+    return result
+  }
+
+  async expand(data: ExtendData): Promise<InitialResponse> {
+    const headers = this.createHeader()
+
+    const raw = JSON.stringify({
+      model: 'wanx2.1-imageedit',
+      parameters: {
+        top_scale: data.scale,
+        bottom_scale: data.scale,
+        left_scale: data.scale,
+        right_scale: data.scale,
+      },
+      input: {
+        function: 'expand',
+        prompt: data.prompt,
+        base_image_url: data.base_image_url,
       },
     })
 

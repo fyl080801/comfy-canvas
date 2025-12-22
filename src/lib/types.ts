@@ -50,9 +50,16 @@ export interface ResolutionData {
   factor: number
 }
 
+export interface ExtendData {
+  prompt: string
+  base_image_url: string
+  scale: number
+}
+
 export interface IProvider extends IEventEmitter<ProviderEvents> {
   inpaint(data: InpaintData): Promise<InitialResponse>
   resolution(data: ResolutionData): Promise<InitialResponse>
+  expand(data: ExtendData): Promise<InitialResponse>
 }
 
 export interface LeaferNodeProps {
