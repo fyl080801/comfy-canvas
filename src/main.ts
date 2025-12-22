@@ -11,6 +11,15 @@ initializeS3({
   bucket: 'temp',
 })
 
+// initializeS3({
+//   endpoint: 'https://s3.cn-north-1.jdcloud-oss.com',
+//   region: 'cn-north-1',
+//   accessKeyId: 'JDC_8D6797C64943C43F08BBB6C00B55',
+//   secretAccessKey: 'C903B372E95086520AF58450075AE088',
+//   bucket: 'fyldev',
+//   forcePathStyle: false,
+// })
+
 const app = createApp(App)
 
 app.use(router)

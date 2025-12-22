@@ -1,139 +1,93 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch, computed } from 'vue'
+import { onMounted, onUnmounted, ref, watch, computed, nextTick } from 'vue'
 import { Position, Handle } from '@vue-flow/core'
 import type { NodeProps } from '@vue-flow/core'
-import { Leafer, DragEvent, Pen, Platform } from 'leafer-ui'
 import '@leafer-in/viewport'
 import '@leafer-in/export' // 引入导出元素插件 //
 import '@leafer-in/color'
 import { uploadImage } from '@/utils/s3'
-import { ApiService } from '../lib/api'
-import { AliyunProvider } from '../lib/providers'
-import { useIsActive } from '@/hooks/canvas'
+import { useDesignNode, useIsActive } from '@/hooks/canvas'
 import type { LeaferNodeProps } from '@/lib/types'
-import { ElButton } from 'element-plus'
-import { Delete } from '@element-plus/icons-vue'
+import NodeTools from './NodeTools.vue'
+import { ElCard } from 'element-plus'
+import { type EditTypes, type NodeEmitEvents } from '../lib/types'
+import DrawEditor from './DrawEditor.vue'
+import UpscaleEditor from './UpscaleEditor.vue'
 
 // u2Gh8iovZ85DpWTrLVfJVOPhYMEfTyCEyAGwM8rlMAaWhU94DduAYFuhRDnH
 
-Platform.image.crossOrigin = 'anonymous'
-
 const props = defineProps<NodeProps<LeaferNodeProps>>()
 
-const providers = {
-  aliyun: AliyunProvider,
-}
-
-const emit = defineEmits(['called', 'success', 'node-click'])
+const emit = defineEmits<NodeEmitEvents>()
 
 const isActive = useIsActive(props.id)
 
-const canvasRef = ref<HTMLDivElement>()
-
-const leaferRef = ref<Leafer>()
-
-const api = ref<ApiService>()
-
-const canvasNodeWidth = ref(500)
-const canvasNodeHeight = ref(500)
+const nodeBound = ref([500, 500])
 
 const bgRef = ref<HTMLImageElement>()
 const fileInputRef = ref<HTMLInputElement>()
-const imageUrl = ref<string>()
+const imageUrl = ref<string | undefined>()
 
 const isEmpty = computed(() => {
   return !props.data.initImageUrl && !imageUrl.value
 })
 
-const updateLeaferSize = (width: number, height: number) => {
-  console.log(width, height)
-  canvasNodeWidth.value = width || 500
-  canvasNodeHeight.value = height || 500
-
-  if (leaferRef.value) {
-    leaferRef.value.width = width
-    leaferRef.value.height = height
-  }
-}
-
-const setupLeafer = () => {
-  const leafer = new Leafer({
-    view: canvasRef.value,
-    type: 'design',
-    width: canvasNodeWidth.value,
-    height: canvasNodeHeight.value,
-    move: {
-      disabled: true,
-    },
-    zoom: {
-      disabled: true,
-    },
-  })
-
-  const pen = new Pen()
-
-  leafer.add(pen)
-
-  leafer.on(DragEvent.START, (e: DragEvent) => {
-    if (!isActive.value) return
-
-    const point = e.getPagePoint()
-    pen.setStyle({ stroke: 'white', strokeWidth: 40, strokeCap: 'round', strokeJoin: 'round' })
-    pen.moveTo(point.x, point.y)
-  })
-
-  leafer.on(DragEvent.DRAG, (e: DragEvent) => {
-    if (!isActive.value) return
-
-    const point = e.getPagePoint()
-    pen.lineTo(point.x, point.y)
-  })
-
-  leafer.disabled = true
-
-  leaferRef.value = leafer
-}
-
-const setupService = () => {
-  const currentApi = new ApiService({
-    provider: new providers[props.data.provider]({ ...(props.data.providerProps || {}) }),
-  })
-
-  currentApi.on('processing', () => {})
-
-  currentApi.on('complete', () => {
-    emit('called')
-  })
-
-  currentApi.on('success', (payload) => {
-    emit('success', { id: props.id, url: payload?.[0]?.url })
-  })
-
-  api.value = currentApi
-}
-
-const setupCanvas = () => {
+const updateLeaferSize = () => {
   if (!bgRef.value) return
 
+  nodeBound.value = [bgRef.value.naturalWidth || 500, bgRef.value.naturalHeight || 500]
+}
+
+let cleanupFunctions: (() => void)[] = []
+
+const setupCanvas = async () => {
+  if (!bgRef.value) return
+
+  // 清理之前的事件监听器
+  cleanupFunctions.forEach((cleanup) => cleanup())
+  cleanupFunctions = []
+
+  // 重置状态
+
+  const handleLoad = async () => {
+    processing.value = false
+    await nextTick()
+    updateLeaferSize()
+  }
+
+  const handleError = () => {
+    processing.value = false
+    // console.error('图片加载失败')
+  }
+
+  // 如果图片已经加载完成且成功
   if (bgRef.value.complete) {
-    updateLeaferSize(bgRef.value.naturalWidth, bgRef.value.naturalHeight)
+    if (bgRef.value.naturalWidth > 0) {
+      // 图片成功加载
+      processing.value = false
+      await handleLoad()
+    } else {
+      // 图片加载失败（complete但naturalWidth为0）
+      handleError()
+    }
   } else {
-    bgRef.value.addEventListener('load', () => {
-      console.log(bgRef.value!.naturalHeight)
-      updateLeaferSize(bgRef.value!.naturalWidth, bgRef.value!.naturalHeight)
+    // 监听加载事件
+    bgRef.value.addEventListener('load', handleLoad)
+    bgRef.value.addEventListener('error', handleError)
+
+    // 保存清理函数
+    cleanupFunctions.push(() => {
+      bgRef.value?.removeEventListener('load', handleLoad)
+      bgRef.value?.removeEventListener('error', handleError)
     })
   }
 }
 
-const resetCanvas = () => {
-  if (!bgRef.value) return
-  bgRef.value.addEventListener('load', () => {
-    console.log(bgRef.value!.naturalHeight)
-    updateLeaferSize(bgRef.value!.naturalWidth, bgRef.value!.naturalHeight)
-  })
+const handleImageError = () => {
+  processing.value = false
 }
 
-const uploading = ref(false)
+const processing = ref(false)
 const onFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
@@ -142,29 +96,41 @@ const onFileChange = async (event: Event) => {
     if (!file) return
 
     try {
-      uploading.value = true
+      processing.value = true
       const uploadedUrl = await uploadImage({ file })
       imageUrl.value = uploadedUrl
     } catch (error) {
       console.error('Error uploading image:', error)
     } finally {
-      uploading.value = false
+      processing.value = false
     }
   }
 }
 
-onMounted(() => {
-  if (props.data.initImageUrl) {
+onMounted(async () => {
+  if (typeof props.data.process === 'function') {
+    // 调用异步的process方法并在未结束时展示 class="node-processing" 的loading层
+    try {
+      processing.value = true
+      const result = await props.data.process()
+      imageUrl.value = result
+    } catch (error) {
+      console.error('Process method failed:', error)
+    } finally {
+      processing.value = false
+    }
+  } else if (props.data.initImageUrl) {
     imageUrl.value = props.data.initImageUrl
   }
 
-  setupService()
+  await nextTick()
+
   setupCanvas()
-  setupLeafer()
 })
 
-onBeforeUnmount(() => {
-  leaferRef.value?.destroy()
+// 组件卸载时清理事件监听器
+onUnmounted(() => {
+  cleanupFunctions.forEach((cleanup) => cleanup())
 })
 
 // 解决鼠标绘制后仍触发点击
@@ -191,86 +157,88 @@ const onMouseMove = (e: MouseEvent) => {
   }
 }
 
-// const editType = ref()
-const onRemove = async () => {
-  if (!imageUrl.value) return
-
-  const result = await leaferRef.value?.export('png', {
-    blob: true,
-    screenshot: true,
-    fill: 'black',
-  })
-
-  const uploaded = await uploadImage({
-    file: result?.data,
-  })
-
-  // editType.value = 'Remove'
-  api.value?.inpaint({
-    base_image_url: imageUrl.value,
-    mask_image_url: uploaded,
-    prompt: 'remove area',
-  })
-}
-// watch(editType, () => {
-//   if (!leaferRef.value) return
-
-//   if (!editType.value) {
-//     leaferRef.value.disabled = true
-//     return
-//   }
-
-//   leaferRef.value.disabled = false
-// })
-
 watch(
   () => isActive.value,
   (value, origin) => {
     if (value === origin) return
-    // if (!leaferRef.value) return
 
-    // if (value) {
-    //   leaferRef.value.disabled = false
-    // } else {
-    //   leaferRef.value.disabled = true
-    // }
+    if (!value) {
+      editType.value = null
+    }
   },
 )
 
 watch(
   () => imageUrl.value,
-  async () => {
-    resetCanvas()
+  async (newUrl, oldUrl) => {
+    if (newUrl !== oldUrl) {
+      if (newUrl) {
+        // 有新图片URL，开始加载过程
+        processing.value = true
+
+        // 等待DOM更新后重新设置canvas
+        await nextTick()
+        setupCanvas()
+      } else {
+        // 图片URL被清空
+        processing.value = false
+      }
+    }
   },
 )
+
+const editType = ref<EditTypes | undefined | null>()
+const onChangeType = (value: EditTypes) => {
+  editType.value = value
+}
+const isShowEditor = computed(() => {
+  if (!editType.value) return
+
+  return (<EditTypes[]>['redraw', 'eraser']).includes(editType.value)
+})
+
+const isShowUpscale = computed(() => {
+  return editType.value === 'hd'
+})
+
+const nodeStyle = computed(() => {
+  return {
+    width: nodeBound.value[0] + 'px',
+    height: nodeBound.value[1] + 'px',
+  }
+})
+
+useDesignNode({
+  id: props.id,
+  imageUrl,
+  editType,
+  processing,
+  nodeBound,
+  emit,
+})
 </script>
 
 <template>
-  <div
+  <ElCard
+    :key="id"
     class="canvas-node"
-    :class="{ active: isActive, empty: isEmpty }"
-    :style="{ width: canvasNodeWidth + 'px', height: canvasNodeHeight + 'px' }"
+    :class="{ active: isActive, empty: isEmpty, processing: processing }"
+    :style="nodeStyle"
+    body-class="node-body"
+    :shadow="isActive ? 'always' : 'hover'"
     @click="onNodeClick"
     @mousedown="onMouseDown"
     @mousemove="onMouseMove"
   >
-    <div v-if="isActive && !isEmpty" class="tools bg-gray-200">
-      <ElButton type="text" :icon="Delete" @click="onRemove">擦除</ElButton>
+    <div class="bg-wrapper">
+      <img ref="bgRef" :src="imageUrl" class="bg" @load="setupCanvas" @error="handleImageError" />
     </div>
 
-    <img ref="bgRef" :src="imageUrl" class="inner bg" />
-    <!-- <div ref="canvasRef" class="inner nodrag nopan"></div> -->
-    <div
-      ref="canvasRef"
-      class="inner"
-      :class="{
-        nodrag: isActive,
-        nopan: isActive,
-      }"
-    ></div>
+    <DrawEditor v-if="isShowEditor"></DrawEditor>
+    <UpscaleEditor v-if="isShowUpscale"></UpscaleEditor>
 
     <div
-      v-if="isEmpty"
+      v-if="isEmpty && !processing"
       class="empty-content absolute inset-0 flex items-center justify-center cursor-pointer"
     >
       <input
@@ -287,26 +255,55 @@ watch(
         上传图片
       </button>
     </div>
+
+    <div class="node-border"></div>
+
+    <div v-if="processing" class="node-processing">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">处理中...</div>
+    </div>
+
+    <NodeTools v-bind="$props" @change-type="onChangeType"></NodeTools>
+
     <Handle type="source" :position="Position.Right" />
     <Handle type="target" :position="Position.Left" />
-  </div>
+  </ElCard>
 </template>
 
 <style lang="scss">
 .canvas-node {
-  border: 2px solid; /* Add a border for visibility */
-  border-color: rgba(225, 225, 225, 0.85);
   border-radius: 20px;
   background-color: transparent;
   position: relative;
   overflow: visible;
+  box-sizing: content-box;
 
-  &.empty {
-    background-color: #c8c8c8;
+  .node-body {
+    padding: 0;
+    overflow: hidden;
   }
 
+  &.empty {
+    background-color: #fff;
+  }
+
+  .node-border {
+    display: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    border: 2px solid silver;
+    border-radius: 20px;
+
+    pointer-events: none;
+  }
   &.active {
-    border-color: rgba(54, 214, 0, 0.85);
+    .node-border {
+      display: block;
+    }
   }
 
   .tools {
@@ -335,9 +332,75 @@ watch(
     left: 0;
     z-index: 0; /* Ensure canvas is above the background image */
     transition: top 0.3s ease; /* Add transition for smooth movement */
+  }
 
-    &.bg {
-      z-index: -1; /* Ensure canvas is above the background image */
+  .bg-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+  }
+
+  .node-processing {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    .loading-text {
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  &.processing {
+    pointer-events: none;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .image-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    z-index: 50;
+
+    .error-text {
+      color: #ff4444;
+      font-size: 14px;
+      font-weight: 500;
     }
   }
 }

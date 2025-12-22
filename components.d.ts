@@ -12,23 +12,43 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Button: typeof import('./src/components/ui/button/Button.vue')['default']
+    Card: typeof import('./src/components/ui/card/Card.vue')['default']
+    CardContent: typeof import('./src/components/ui/card/CardContent.vue')['default']
+    CardDescription: typeof import('./src/components/ui/card/CardDescription.vue')['default']
+    CardFooter: typeof import('./src/components/ui/card/CardFooter.vue')['default']
+    CardHeader: typeof import('./src/components/ui/card/CardHeader.vue')['default']
+    CardTitle: typeof import('./src/components/ui/card/CardTitle.vue')['default']
+    DrawEditor: typeof import('./src/components/DrawEditor.vue')['default']
     DropzoneBackground: typeof import('./src/components/DropzoneBackground.vue')['default']
     LeaferNode: typeof import('./src/components/LeaferNode.vue')['default']
+    NodeTools: typeof import('./src/components/NodeTools.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SpecialEdge: typeof import('./src/components/SpecialEdge.vue')['default']
     SpecialNode: typeof import('./src/components/SpecialNode.vue')['default']
     ToolsPanel: typeof import('./src/components/ToolsPanel.vue')['default']
+    UpscaleEditor: typeof import('./src/components/UpscaleEditor.vue')['default']
   }
 }
 
 // For TSX support
 declare global {
+  const Button: typeof import('./src/components/ui/button/Button.vue')['default']
+  const Card: typeof import('./src/components/ui/card/Card.vue')['default']
+  const CardContent: typeof import('./src/components/ui/card/CardContent.vue')['default']
+  const CardDescription: typeof import('./src/components/ui/card/CardDescription.vue')['default']
+  const CardFooter: typeof import('./src/components/ui/card/CardFooter.vue')['default']
+  const CardHeader: typeof import('./src/components/ui/card/CardHeader.vue')['default']
+  const CardTitle: typeof import('./src/components/ui/card/CardTitle.vue')['default']
+  const DrawEditor: typeof import('./src/components/DrawEditor.vue')['default']
   const DropzoneBackground: typeof import('./src/components/DropzoneBackground.vue')['default']
   const LeaferNode: typeof import('./src/components/LeaferNode.vue')['default']
+  const NodeTools: typeof import('./src/components/NodeTools.vue')['default']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
   const SpecialEdge: typeof import('./src/components/SpecialEdge.vue')['default']
   const SpecialNode: typeof import('./src/components/SpecialNode.vue')['default']
   const ToolsPanel: typeof import('./src/components/ToolsPanel.vue')['default']
+  const UpscaleEditor: typeof import('./src/components/UpscaleEditor.vue')['default']
 }

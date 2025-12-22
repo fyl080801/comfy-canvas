@@ -1,4 +1,4 @@
-import type { InpaintData, IProvider, ProviderEvents, TaskResponse } from './types'
+import type { InpaintData, IProvider, ProviderEvents, ResolutionData, TaskResponse } from './types'
 import { type IEventEmitter } from './EventEmitter'
 
 // type ApiStatus = 'pending' | 'polling' | 'succeeded' | 'failed' | 'cancelled'
@@ -27,5 +27,9 @@ export class ApiService implements IEventEmitter<ProviderEvents> {
 
   async inpaint(data: InpaintData): Promise<void> {
     this._provider.inpaint(data)
+  }
+
+  async resolution(data: ResolutionData): Promise<void> {
+    this._provider.resolution(data)
   }
 }

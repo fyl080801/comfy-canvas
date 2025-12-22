@@ -3,10 +3,12 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
 // S3 客户端配置
 interface S3Config {
+  endpoint?: string
   region: string
   accessKeyId: string
   secretAccessKey: string
   bucket: string
+  forcePathStyle?: boolean
 }
 
 // 上传图片的配置选项
@@ -27,9 +29,9 @@ let currentConfig: S3Config | null = null
  */
 export function initializeS3(config: S3Config): void {
   s3Client = new S3Client({
-    endpoint: 'https://s3.fyl080801.uk',
+    endpoint: config.endpoint || 'https://s3.fyl080801.uk', //  'https://s3.cn-north-1.jdcloud-oss.com', // 'https://s3.fyl080801.uk',
     region: config.region,
-    forcePathStyle: true,
+    forcePathStyle: config.forcePathStyle ?? true,
     credentials: {
       accessKeyId: config.accessKeyId,
       secretAccessKey: config.secretAccessKey,

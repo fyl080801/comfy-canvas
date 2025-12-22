@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import type { Node, Edge } from '@vue-flow/core'
-import { VueFlow } from '@vue-flow/core'
+import { useVueFlow, VueFlow } from '@vue-flow/core'
 
 // these components are only shown as examples of how to use a custom node or edge
 // you can find many examples of how to create these custom components in the examples page of the docs
-import SpecialNode from './components/SpecialNode.vue'
+// import SpecialNode from './components/SpecialNode.vue'
 import SpecialEdge from './components/SpecialEdge.vue'
 import LeaferNode from './components/LeaferNode.vue'
 import DropzoneBackground from './components/DropzoneBackground.vue'
@@ -17,114 +17,28 @@ import type { LeaferNodeProps } from './lib/types'
 
 // these are our nodes
 
+const { addNodes, addEdges } = useVueFlow()
+
 const context = reactive<DesignContext>({
   activeNodeId: null,
+  processing: false,
 })
 
-const nodes = ref<Node<LeaferNodeProps>[]>([
-  // // an input node, specified by using `type: 'input'`
-  // {
-  //   id: '1',
-  //   type: 'input',
-  //   position: { x: 250, y: 5 },
-  //   // all nodes can have a data object containing any data you want to pass to the node
-  //   // a label can property can be used for default nodes
-  //   data: { label: 'Node 1' },
-  // },
-  // // default node, you can omit `type: 'default'` as it's the fallback type
-  // {
-  //   id: '2',
-  //   position: { x: 100, y: 100 },
-  //   data: { label: 'Node 2' },
-  // },
-  // // An output node, specified by using `type: 'output'`
-  // {
-  //   id: '3',
-  //   type: 'output',
-  //   position: { x: 400, y: 200 },
-  //   data: { label: 'Node 3' },
-  // },
-  // // this is a custom node
-  // // we set it by using a custom type name we choose, in this example `special`
-  // // the name can be freely chosen, there are no restrictions as long as it's a string
-  // {
-  //   id: '4',
-  //   type: 'special', // <-- this is the custom node type name
-  //   position: { x: 400, y: 200 },
-  //   data: {
-  //     label: 'Node 4',
-  //     hello: 'world',
-  //   },
-  // },
-  // {
-  //   id: '5',
-  //   type: 'leafer', // <-- this is the custom node type name
-  //   position: { x: 800, y: 200 },
-  // },
-])
+const nodes = ref<Node<LeaferNodeProps>[]>([])
 
-// these are our edges
-const edges = ref<Edge[]>([
-  // // default bezier edge
-  // // consists of an edge id, source node id and target node id
-  // {
-  //   id: 'e1->2',
-  //   source: '1',
-  //   target: '2',
-  // },
-  // // set `animated: true` to create an animated edge path
-  // {
-  //   id: 'e2->3',
-  //   source: '2',
-  //   target: '3',
-  //   animated: true,
-  // },
-  // // a custom edge, specified by using a custom type name
-  // // we choose `type: 'special'` for this example
-  // {
-  //   id: 'e3->4',
-  //   type: 'special',
-  //   source: '3',
-  //   target: '4',
-  //   // all edges can have a data object containing any data you want to pass to the edge
-  //   data: {
-  //     hello: 'world',
-  //   },
-  // },
-  // {
-  //   id: 'e4->5',
-  //   type: 'leafer',
-  //   source: '4',
-  //   target: '5',
-  // },
-])
-
-const onSuccess = ({ id, url }: { id: string; url: string }) => {
-  const newId = crypto.randomUUID()
-
-  nodes.value.push({
-    id: newId,
-    type: 'leafer',
-    position: { x: 900, y: 200 },
-    data: { provider: 'aliyun', initImageUrl: url },
-  })
-
-  edges.value.push({
-    id: crypto.randomUUID(),
-    source: id,
-    target: newId,
-  })
-}
+const edges = ref<Edge[]>([])
 
 const onAdd = () => {
   const newId = crypto.randomUUID()
 
-  nodes.value.push({
-    id: newId,
-    type: 'leafer',
-    position: { x: 900, y: 200 },
-    data: { provider: 'aliyun' },
-  })
+  addNodes([
+    {
+      id: newId,
+      type: 'leafer',
+      position: { x: 900, y: 200 },
+      data: { provider: 'aliyun' },
+    },
+  ])
 
   context.activeNodeId = null
 }
@@ -141,8 +55,35 @@ const onPaneClick = () => {
   context.activeNodeId = null
 }
 
+const onNextNode = (id: string, payload: any) => {
+  const newId = crypto.randomUUID()
+
+  addNodes([
+    {
+      id: newId,
+      type: 'leafer',
+      position: { x: 900, y: 200 },
+      data: { provider: 'aliyun', ...payload },
+    },
+  ])
+
+  addEdges([
+    {
+      id: crypto.randomUUID(),
+      source: id,
+      target: newId,
+    },
+  ])
+}
+
 useDesignCanvas({
   context,
+  clearActive: () => {
+    context.activeNodeId = null
+  },
+  toggleProcessing: (value) => {
+    context.processing = value
+  },
 })
 </script>
 
@@ -150,18 +91,22 @@ useDesignCanvas({
   <div class="main">
     <VueFlow ref="canvasRef" :nodes="nodes" :edges="edges" @pane-click="onPaneClick">
       <!-- bind your custom node type to a component by using slots, slot names are always `node-<type>` -->
-      <template #node-special="specialNodeProps">
+      <!-- <template #node-special="specialNodeProps">
         <SpecialNode v-bind="specialNodeProps" />
-      </template>
+      </template> -->
 
       <template #node-leafer="nodeProps">
-        <LeaferNode v-bind="nodeProps" @node-click="onNodeClick" @success="onSuccess" />
+        <LeaferNode v-bind="nodeProps" @node-click="onNodeClick" @next="onNextNode" />
       </template>
 
       <!-- bind your custom edge type to a component by using slots, slot names are always `edge-<type>` -->
       <template #edge-special="specialEdgeProps">
         <SpecialEdge v-bind="specialEdgeProps" />
       </template>
+
+      <!-- <template #node-menu="toolProps">
+        <NodeTools v-bind="toolProps" :id="toolProps.id" :data="toolProps.data" />
+      </template> -->
 
       <ToolsPanel>
         <ElButton link :icon="Plus" @click="onAdd"> </ElButton>

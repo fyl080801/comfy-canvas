@@ -1,5 +1,5 @@
 import { Polling } from '../polling'
-import type { InpaintData, InitialResponse } from '../types'
+import type { InpaintData, InitialResponse, ResolutionData } from '../types'
 import { BaseProvider } from './base'
 
 const API_TOKEN = 'sk-af23e390b1d549dfbd028b7172765515'
@@ -9,45 +9,16 @@ export class AliyunProvider extends BaseProvider {
   private _apiKey: string = API_TOKEN
   private _pollingTimeout: number = 5000
 
-  constructor({ pollingTimeout, apiKey }: { pollingTimeout: number; apiKey: string }) {
-    super()
-
-    this._apiKey = apiKey ?? this._apiKey
-    this._pollingTimeout = pollingTimeout ?? this._pollingTimeout
-  }
-
-  async inpaint(data: InpaintData): Promise<InitialResponse> {
+  private createHeader() {
     const myHeaders = new Headers()
     myHeaders.append('Content-Type', 'application/json')
     myHeaders.append('Authorization', `Bearer ${this._apiKey}`)
     myHeaders.append('X-DashScope-Async', 'enable')
 
-    const raw = JSON.stringify({
-      model: 'wanx2.1-imageedit',
-      parameters: {
-        n: 1,
-      },
-      input: {
-        function: 'description_edit_with_mask',
-        prompt: data.prompt,
-        base_image_url: data.base_image_url,
-        mask_image_url: data.mask_image_url,
-      },
-    })
+    return myHeaders
+  }
 
-    const response = await fetch(`/aliyun/api/v1/services/aigc/image2image/image-synthesis`, {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow',
-    })
-
-    if (!response.ok) {
-      throw new Error(`请求失败: ${response.status} ${response.statusText}`)
-    }
-
-    const result = await response.json()
-
+  private createPollingWaitter(result: any) {
     const polling = new Polling(
       async () => {
         const response = await fetch(`/aliyun/api/v1/tasks/${result.output.task_id}`, {
@@ -87,6 +58,78 @@ export class AliyunProvider extends BaseProvider {
     )
 
     this._pollings.push(polling)
+  }
+
+  constructor({ pollingTimeout, apiKey }: { pollingTimeout: number; apiKey: string }) {
+    super()
+
+    this._apiKey = apiKey ?? this._apiKey
+    this._pollingTimeout = pollingTimeout ?? this._pollingTimeout
+  }
+
+  async resolution(data: ResolutionData): Promise<InitialResponse> {
+    const headers = this.createHeader()
+
+    const raw = JSON.stringify({
+      model: 'wanx2.1-imageedit',
+      parameters: {
+        upscale_factor: data.factor,
+      },
+      input: {
+        function: 'super_resolution',
+        prompt: data.prompt,
+        base_image_url: data.base_image_url,
+      },
+    })
+
+    const response = await fetch(`/aliyun/api/v1/services/aigc/image2image/image-synthesis`, {
+      method: 'POST',
+      headers,
+      body: raw,
+      redirect: 'follow',
+    })
+
+    if (!response.ok) {
+      throw new Error(`请求失败: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+
+    this.createPollingWaitter(result)
+
+    return result
+  }
+
+  async inpaint(data: InpaintData): Promise<InitialResponse> {
+    const headers = this.createHeader()
+
+    const raw = JSON.stringify({
+      model: 'wanx2.1-imageedit',
+      parameters: {
+        n: 1,
+      },
+      input: {
+        function: 'description_edit_with_mask',
+        prompt: data.prompt,
+        base_image_url: data.base_image_url,
+        mask_image_url: data.mask_image_url,
+      },
+    })
+
+    const response = await fetch(`/aliyun/api/v1/services/aigc/image2image/image-synthesis`, {
+      method: 'POST',
+      headers,
+      body: raw,
+      redirect: 'follow',
+    })
+
+    if (!response.ok) {
+      throw new Error(`请求失败: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+
+    this.createPollingWaitter(result)
 
     return result
   }
