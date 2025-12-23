@@ -301,8 +301,10 @@ useDesignNode({
       <div class="node-border"></div>
 
       <div v-if="processing" class="node-processing">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">处理中...</div>
+        <div class="loading-spinner">
+          <div class="spinner-ring"></div>
+        </div>
+        <div class="loading-text">AI 处理中...</div>
       </div>
 
       <NodeTools v-bind="$props" @change-type="onChangeType"></NodeTools>
@@ -416,31 +418,52 @@ useDesignNode({
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.15), transparent 40%),
-      radial-gradient(circle at 70% 70%, rgba(59, 130, 246, 0.12), transparent 45%),
-      rgba(15, 23, 42, 0.78);
+      radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.12), transparent 40%),
+      radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.10), transparent 45%),
+      rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
     border-radius: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 100;
-    gap: 12px;
+    gap: 16px;
 
     .loading-spinner {
-      width: 42px;
-      height: 42px;
-      border: 4px solid #e2e8f0;
-      border-top: 4px solid #4f46e5;
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
+      width: 48px;
+      height: 48px;
+      position: relative;
+
+      .spinner-ring {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-top-color: #6366f1;
+        border-right-color: #8b5cf6;
+        animation: spin 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        box-shadow:
+          0 0 20px rgba(99, 102, 241, 0.4),
+          inset 0 0 20px rgba(139, 92, 246, 0.2);
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 4px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.1));
+        animation: pulse 1.5s ease-in-out infinite;
+      }
     }
 
     .loading-text {
-      color: #e2e8f0;
+      color: #f1f5f9;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 500;
       letter-spacing: 0.02em;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
   }
 
@@ -455,6 +478,17 @@ useDesignNode({
     }
     100% {
       transform: rotate(360deg);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.05);
     }
   }
 }

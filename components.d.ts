@@ -12,6 +12,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Badge: typeof import('./src/components/ui/badge/Badge.vue')['default']
     Button: typeof import('./src/components/ui/button/Button.vue')['default']
     Card: typeof import('./src/components/ui/card/Card.vue')['default']
     CardContent: typeof import('./src/components/ui/card/CardContent.vue')['default']
@@ -22,25 +23,29 @@ declare module 'vue' {
     ChatInput: typeof import('./src/components/ui/chat-input/ChatInput.vue')['default']
     DrawEditor: typeof import('./src/components/DrawEditor.vue')['default']
     DropzoneBackground: typeof import('./src/components/DropzoneBackground.vue')['default']
-    ElButton: typeof import('element-plus/es')['ElButton']
     ExpandEditor: typeof import('./src/components/ExpandEditor.vue')['default']
-    ExtendEditor: typeof import('./src/components/ExtendEditor.vue')['default']
     Input: typeof import('./src/components/ui/input/Input.vue')['default']
     LeaferNode: typeof import('./src/components/LeaferNode.vue')['default']
     NodeTools: typeof import('./src/components/NodeTools.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Separator: typeof import('./src/components/ui/separator/Separator.vue')['default']
     Slider: typeof import('./src/components/ui/slider/Slider.vue')['default']
     SpecialEdge: typeof import('./src/components/SpecialEdge.vue')['default']
     SpecialNode: typeof import('./src/components/SpecialNode.vue')['default']
     Textarea: typeof import('./src/components/ui/textarea/Textarea.vue')['default']
     ToolsPanel: typeof import('./src/components/ToolsPanel.vue')['default']
+    Tooltip: typeof import('./src/components/ui/tooltip/Tooltip.vue')['default']
+    TooltipContent: typeof import('./src/components/ui/tooltip/TooltipContent.vue')['default']
+    TooltipProvider: typeof import('./src/components/ui/tooltip/TooltipProvider.vue')['default']
+    TooltipTrigger: typeof import('./src/components/ui/tooltip/TooltipTrigger.vue')['default']
     UpscaleEditor: typeof import('./src/components/UpscaleEditor.vue')['default']
   }
 }
 
 // For TSX support
 declare global {
+  const Badge: typeof import('./src/components/ui/badge/Badge.vue')['default']
   const Button: typeof import('./src/components/ui/button/Button.vue')['default']
   const Card: typeof import('./src/components/ui/card/Card.vue')['default']
   const CardContent: typeof import('./src/components/ui/card/CardContent.vue')['default']
@@ -51,18 +56,21 @@ declare global {
   const ChatInput: typeof import('./src/components/ui/chat-input/ChatInput.vue')['default']
   const DrawEditor: typeof import('./src/components/DrawEditor.vue')['default']
   const DropzoneBackground: typeof import('./src/components/DropzoneBackground.vue')['default']
-  const ElButton: typeof import('element-plus/es')['ElButton']
   const ExpandEditor: typeof import('./src/components/ExpandEditor.vue')['default']
-  const ExtendEditor: typeof import('./src/components/ExtendEditor.vue')['default']
   const Input: typeof import('./src/components/ui/input/Input.vue')['default']
   const LeaferNode: typeof import('./src/components/LeaferNode.vue')['default']
   const NodeTools: typeof import('./src/components/NodeTools.vue')['default']
   const RouterLink: typeof import('vue-router')['RouterLink']
   const RouterView: typeof import('vue-router')['RouterView']
+  const Separator: typeof import('./src/components/ui/separator/Separator.vue')['default']
   const Slider: typeof import('./src/components/ui/slider/Slider.vue')['default']
   const SpecialEdge: typeof import('./src/components/SpecialEdge.vue')['default']
   const SpecialNode: typeof import('./src/components/SpecialNode.vue')['default']
   const Textarea: typeof import('./src/components/ui/textarea/Textarea.vue')['default']
   const ToolsPanel: typeof import('./src/components/ToolsPanel.vue')['default']
+  const Tooltip: typeof import('./src/components/ui/tooltip/Tooltip.vue')['default']
+  const TooltipContent: typeof import('./src/components/ui/tooltip/TooltipContent.vue')['default']
+  const TooltipProvider: typeof import('./src/components/ui/tooltip/TooltipProvider.vue')['default']
+  const TooltipTrigger: typeof import('./src/components/ui/tooltip/TooltipTrigger.vue')['default']
   const UpscaleEditor: typeof import('./src/components/UpscaleEditor.vue')['default']
 }

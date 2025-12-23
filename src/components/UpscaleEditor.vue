@@ -4,8 +4,14 @@ import { Position } from '@vue-flow/core'
 import { NodeToolbar } from '@vue-flow/node-toolbar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
-const scales = [1, 2, 3, 4]
+const scales = [
+  { value: 1, label: '1x', desc: '原始尺寸' },
+  { value: 2, label: '2x', desc: '2倍放大' },
+  { value: 3, label: '3x', desc: '3倍放大' },
+  { value: 4, label: '4x', desc: '4倍放大' },
+]
 
 const { emit, id: nodeId, imageUrl } = useDesignNode()
 const { clearActive } = useDesignCanvas()
@@ -58,17 +64,24 @@ const onSubmit = async (value: number) => {
   <NodeToolbar :is-visible="true" :position="Position.Bottom">
     <Card>
       <CardContent class="upscaletool-content">
-        <div @click.stop @mousedown.stop class="flex gap-2">
-          <Button
-            v-for="item in scales"
-            :key="item"
-            variant="secondary"
-            @click="onSubmit(item)"
-            size="sm"
-          >
-            x{{ item }}
-          </Button>
-        </div>
+        <TooltipProvider>
+          <div @click.stop @mousedown.stop class="flex gap-2">
+            <Tooltip v-for="item in scales" :key="item.value">
+              <TooltipTrigger as-child>
+                <Button
+                  variant="secondary"
+                  @click="onSubmit(item.value)"
+                  size="sm"
+                >
+                  {{ item.label }}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{{ item.desc }}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </CardContent>
     </Card>
   </NodeToolbar>

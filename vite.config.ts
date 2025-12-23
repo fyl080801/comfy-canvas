@@ -7,8 +7,6 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 import tailwindcss from '@tailwindcss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import ElementPlus from 'unplugin-element-plus/vite'
 
 const createProxy = ({
   target,
@@ -50,12 +48,12 @@ export default defineConfig({
     vueJsx(),
     vueDevTools(),
     tailwindcss(),
-    ElementPlus({}),
     AutoImport({
-      resolvers: [ElementPlusResolver()],
+      imports: ['vue', 'vue-router'],
+      dts: 'auto-imports.d.ts',
     }),
     Components({
-      resolvers: [ElementPlusResolver()],
+      dts: 'components.d.ts',
     }),
   ],
   resolve: {
