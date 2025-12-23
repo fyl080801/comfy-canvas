@@ -1,16 +1,9 @@
 <script setup lang="ts">
-import {
-  useIsActive,
-  useIsEmpty,
-  useCurrentEditType,
-  useDesignNode,
-  useIsProcessing,
-} from '@/hooks/canvas'
+import { useIsActive, useIsEmpty, useCurrentEditType, useIsProcessing } from '@/hooks/canvas'
 import type { EditTypes, LeaferNodeProps } from '@/lib/types'
 import { Position, useVueFlow, type NodeProps } from '@vue-flow/core'
 import { NodeToolbar } from '@vue-flow/node-toolbar'
 import { ElButton, ElCard } from 'element-plus'
-import { watch } from 'vue'
 
 defineProps<NodeProps<LeaferNodeProps>>()
 
@@ -29,18 +22,6 @@ const onEdit = (type: EditTypes) => {
   } else {
     emit('change-type', null)
   }
-}
-
-const { id, emit: nodeEmit, imageUrl } = useDesignNode()
-watch(editType, () => {
-  // debugger
-})
-
-const onTest = () => {
-  nodeEmit('next', id, {
-    provider: 'aliyun',
-    initImageUrl: imageUrl.value,
-  })
 }
 </script>
 

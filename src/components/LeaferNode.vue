@@ -2,9 +2,6 @@
 import { onMounted, onUnmounted, ref, watch, computed, nextTick } from 'vue'
 import { Position, Handle } from '@vue-flow/core'
 import type { NodeProps } from '@vue-flow/core'
-import '@leafer-in/viewport'
-import '@leafer-in/export' // 引入导出元素插件 //
-import '@leafer-in/color'
 import { uploadImage } from '@/utils/s3'
 import { useDesignNode, useIsActive } from '@/hooks/canvas'
 import type { LeaferNodeProps } from '@/lib/types'
@@ -299,7 +296,7 @@ useDesignNode({
     left: 0;
     right: 0;
 
-    border: 2px solid silver;
+    border: 4px solid rgb(225, 225, 225);
     border-radius: 20px;
 
     pointer-events: none;

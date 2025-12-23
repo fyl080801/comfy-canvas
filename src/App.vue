@@ -89,7 +89,14 @@ useDesignCanvas({
 
 <template>
   <div class="main">
-    <VueFlow ref="canvasRef" :nodes="nodes" :edges="edges" @pane-click="onPaneClick">
+    <VueFlow
+      ref="canvasRef"
+      :nodes="nodes"
+      :edges="edges"
+      :min-zoom="0.1"
+      class="draw-flow"
+      @pane-click="onPaneClick"
+    >
       <!-- bind your custom node type to a component by using slots, slot names are always `node-<type>` -->
       <!-- <template #node-special="specialNodeProps">
         <SpecialNode v-bind="specialNodeProps" />
@@ -122,5 +129,9 @@ useDesignCanvas({
 
 .main {
   @apply absolute top-0 bottom-0 left-0 right-0;
+}
+
+.draw-flow {
+  /* background-color: rgba(255, 255, 255, 0.1); */
 }
 </style>

@@ -1,7 +1,6 @@
 import { AliyunProvider } from '@/lib/providers'
 import type { EditTypes, LeaferNodeProps } from '@/lib/types'
 import { useNodesData, type GraphNode } from '@vue-flow/core'
-import type { Leafer } from 'leafer-ui'
 import { ref } from 'vue'
 import { computed, inject, provide, type Reactive, type Ref } from 'vue'
 
