@@ -4,7 +4,7 @@ import {
   useIsEmpty,
   useCurrentEditType,
   useIsProcessing,
-  useDesignNode,
+  // useDesignNode,
 } from '@/hooks/canvas'
 import type { EditTypes, LeaferNodeProps } from '@/lib/types'
 import { Position, useVueFlow, type NodeProps } from '@vue-flow/core'
@@ -19,7 +19,7 @@ const emit = defineEmits(['change-type'])
 
 const {} = useVueFlow()
 
-const { emit: nodeEmit, id: nodeId, imageUrl } = useDesignNode()
+// const { emit: nodeEmit, id: nodeId, imageUrl } = useDesignNode()
 
 const isActive = useIsActive()
 const isEmpty = useIsEmpty()

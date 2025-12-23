@@ -70,7 +70,7 @@ const onNextNode = async (id: string, payload: any) => {
       id: newId,
       type: 'leafer',
       position,
-      data: { provider: 'aliyun', ...payload },      
+      data: { provider: 'aliyun', ...payload },
     },
   ])
 
@@ -90,8 +90,7 @@ const onNextNode = async (id: string, payload: any) => {
     setCenter(
       newNode.position.x + newNode.dimensions.width / 2,
       newNode.position.y + newNode.dimensions.height / 2,
-      { zoom: 1,duration: 500, 
-     },
+      { zoom: 1, duration: 500 },
     )
   }
 }
