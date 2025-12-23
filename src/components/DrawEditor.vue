@@ -49,7 +49,7 @@ const onClear = () => {
 const createMaskImage = async (): Promise<string> => {
   if (!canvas.value) return ''
 
-  // 创建一个临时画布来处理遮罩（保持背景透明，仅保留笔触为白色）
+  // 创建一个临时画布来处理遮罩（黑色背景，白色笔触）
   const tempCanvas = document.createElement('canvas')
   const ctx = tempCanvas.getContext('2d')
   if (!ctx) return ''
@@ -59,33 +59,35 @@ const createMaskImage = async (): Promise<string> => {
   tempCanvas.width = canvas.value.width || 500
   tempCanvas.height = canvas.value.height || 500
 
-  // 直接绘制原始画布（背景透明）
+  // 先绘制原始画布内容到临时画布（此时背景是透明的）
   ctx.clearRect(0, 0, tempCanvas.width, tempCanvas.height)
   ctx.drawImage(originalCanvas, 0, 0)
 
-  // 获取图像数据以处理透明像素
+  // 获取图像数据以处理像素
   const imageData = ctx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
   const pixels = imageData.data
 
-  // 处理像素：将绘制的部分保持白色，未绘制的部分保持完全透明
+  // 处理像素：将绘制的部分（有内容）设为白色，未绘制的部分保持黑色
   for (let i = 0; i < pixels.length; i += 4) {
     const alpha = pixels[i + 3] // Alpha通道
     if (alpha && alpha > 0) {
+      // 有绘制内容的像素设为白色
       pixels[i] = 255 // R
       pixels[i + 1] = 255 // G
       pixels[i + 2] = 255 // B
       pixels[i + 3] = 255 // Alpha (完全不透明)
     } else {
-      pixels[i] = 0
-      pixels[i + 1] = 0
-      pixels[i + 2] = 0
-      pixels[i + 3] = 0 // 完全透明，保留透明网格
+      // 透明区域设为黑色
+      pixels[i] = 0 // R
+      pixels[i + 1] = 0 // G
+      pixels[i + 2] = 0 // B
+      pixels[i + 3] = 255 // Alpha (完全不透明)
     }
   }
 
   ctx.putImageData(imageData, 0, 0)
 
-  // 导出为PNG（透明背景）
+  // 导出为PNG（黑色背景，白色图形）
   return tempCanvas.toDataURL('image/png', 1.0)
 }
 
