@@ -87,11 +87,7 @@ const onNextNode = async (id: string, payload: any) => {
   const newNode = findNode(newId)
 
   if (newNode) {
-    setCenter(
-      newNode.position.x + newNode.dimensions.width / 2,
-      newNode.position.y + newNode.dimensions.height / 2,
-      { zoom: 1, duration: 500 },
-    )
+    setCenter(newNode.position.x + 250, newNode.position.y + 250, { zoom: 1, duration: 500 })
   }
 }
 

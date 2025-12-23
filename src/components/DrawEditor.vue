@@ -121,7 +121,7 @@ const onSubmit = async (text?: string) => {
     file: blob,
   })
 
-  const prompt = editType.value === 'eraser' ? '擦除' : text || ''
+  const prompt = editType.value === 'eraser' ? '移除对象,显示后面的元素,画面整体协调' : text || ''
 
   const input = imageUrl.value
 
