@@ -2,7 +2,8 @@
 import { useDesignCanvas, useDesignNode, useNodeProvider } from '@/hooks/canvas'
 import { Position } from '@vue-flow/core'
 import { NodeToolbar } from '@vue-flow/node-toolbar'
-import { ElButton, ElCard } from 'element-plus'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 const scales = [1, 2, 3, 4]
 
@@ -55,11 +56,21 @@ const onSubmit = async (value: number) => {
 
 <template>
   <NodeToolbar :is-visible="true" :position="Position.Bottom">
-    <ElCard body-class="upscaletool-content">
-      <div @click.stop @mousedown.stop>
-        <ElButton v-for="item in scales" :key="item" @click="onSubmit(item)">x{{ item }}</ElButton>
-      </div>
-    </ElCard>
+    <Card>
+      <CardContent class="upscaletool-content">
+        <div @click.stop @mousedown.stop class="flex gap-2">
+          <Button
+            v-for="item in scales"
+            :key="item"
+            variant="secondary"
+            @click="onSubmit(item)"
+            size="sm"
+          >
+            x{{ item }}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   </NodeToolbar>
 </template>
 

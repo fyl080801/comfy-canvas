@@ -6,11 +6,14 @@ import { uploadImage } from '@/utils/s3'
 import { useDesignNode, useIsActive } from '@/hooks/canvas'
 import type { LeaferNodeProps } from '@/lib/types'
 import NodeTools from './NodeTools.vue'
-import { ElCard } from 'element-plus'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { type EditTypes, type NodeEmitEvents } from '../lib/types'
 import DrawEditor from './DrawEditor.vue'
 import UpscaleEditor from './UpscaleEditor.vue'
 import ExpandEditor from './ExpandEditor.vue'
+import { NodeToolbar } from '@vue-flow/node-toolbar'
+import { Input } from '@/components/ui/input'
 
 // u2Gh8iovZ85DpWTrLVfJVOPhYMEfTyCEyAGwM8rlMAaWhU94DduAYFuhRDnH
 
@@ -136,7 +139,7 @@ let isDragging = false
 let startX = 0
 let startY = 0
 const onNodeClick = (e: MouseEvent) => {
-  if (isDragging) {
+  if (isDragging || editType.value) {
     e.preventDefault()
     e.stopPropagation()
     return
@@ -201,6 +204,40 @@ const isShowExpand = computed(() => {
   return editType.value === 'extend'
 })
 
+const nodeTitle = ref(props.data?.title ?? 'Image')
+const isEditingTitle = ref(false)
+const titleInputRef = ref<HTMLInputElement>()
+
+watch(
+  () => props.data?.title,
+  (newTitle) => {
+    if (typeof newTitle === 'string' && newTitle !== nodeTitle.value) {
+      nodeTitle.value = newTitle
+    }
+  },
+)
+
+const beginEditTitle = async () => {
+  isEditingTitle.value = true
+  await nextTick()
+  titleInputRef.value?.focus()
+  titleInputRef.value?.select()
+}
+
+const finishEditTitle = () => {
+  isEditingTitle.value = false
+}
+
+const onTitleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    finishEditTitle()
+  } else if (event.key === 'Escape') {
+    event.preventDefault()
+    isEditingTitle.value = false
+  }
+}
+
 const nodeStyle = computed(() => {
   return {
     width: nodeBound.value[0] + 'px',
@@ -219,151 +256,197 @@ useDesignNode({
 </script>
 
 <template>
-  <ElCard
+  <Card
     :key="id"
-    class="canvas-node"
-    :class="{ active: isActive, empty: isEmpty, processing: processing }"
+    class="canvas-node border border-border/80 bg-card shadow-sm transition-all duration-200"
+    :class="{
+      'is-active': isActive,
+      'is-empty': isEmpty,
+      'is-processing': processing,
+    }"
     :style="nodeStyle"
-    body-class="node-body"
-    :shadow="isActive ? 'always' : 'hover'"
     @click="onNodeClick"
     @mousedown="onMouseDown"
     @mousemove="onMouseMove"
   >
-    <div class="bg-wrapper">
-      <img ref="bgRef" :src="imageUrl" class="bg" @load="setupCanvas" @error="handleImageError" />
-    </div>
+    <div class="node-body">
+      <div class="bg-wrapper">
+        <img ref="bgRef" :src="imageUrl" class="bg" @load="setupCanvas" @error="handleImageError" />
+      </div>
 
-    <DrawEditor v-if="isShowEditor"></DrawEditor>
-    <UpscaleEditor v-if="isShowUpscale"></UpscaleEditor>
-    <ExpandEditor v-if="isShowExpand"></ExpandEditor>
+      <DrawEditor v-if="isShowEditor"></DrawEditor>
+      <UpscaleEditor v-if="isShowUpscale"></UpscaleEditor>
+      <ExpandEditor v-if="isShowExpand"></ExpandEditor>
 
-    <div
-      v-if="isEmpty && !processing"
-      class="empty-content absolute inset-0 flex items-center justify-center cursor-pointer"
-    >
-      <input
-        type="file"
-        ref="fileInputRef"
-        class="hidden"
-        @change="onFileChange"
-        accept="image/*"
-      />
-      <button
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        @click="fileInputRef?.click()"
+      <div
+        v-if="isEmpty && !processing"
+        class="empty-content absolute inset-0 flex items-center justify-center cursor-pointer"
       >
-        上传图片
-      </button>
+        <input
+          type="file"
+          ref="fileInputRef"
+          class="hidden"
+          @change="onFileChange"
+          accept="image/*"
+        />
+        <Button
+          size="sm"
+          class="font-medium shadow-sm hover:shadow transition-all"
+          @click="fileInputRef?.click()"
+        >
+          上传图片
+        </Button>
+      </div>
+
+      <div class="node-border"></div>
+
+      <div v-if="processing" class="node-processing">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">处理中...</div>
+      </div>
+
+      <NodeTools v-bind="$props" @change-type="onChangeType"></NodeTools>
+      <NodeToolbar :is-visible="true" align="start">
+        <div class="toolbar-title" @click="!isEditingTitle && beginEditTitle()">
+          <Input
+            v-if="isEditingTitle"
+            ref="titleInputRef"
+            v-model="nodeTitle"
+            class="h-7 w-28 text-sm"
+            @blur="finishEditTitle"
+            @keydown="onTitleKeydown"
+          />
+          <span v-else class="title-text">{{ nodeTitle || '未命名' }}</span>
+        </div>
+      </NodeToolbar>
+
+      <Handle type="source" :position="Position.Right" />
+      <Handle type="target" :position="Position.Left" />
     </div>
-
-    <div class="node-border"></div>
-
-    <div v-if="processing" class="node-processing">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">处理中...</div>
-    </div>
-
-    <NodeTools v-bind="$props" @change-type="onChangeType"></NodeTools>
-
-    <Handle type="source" :position="Position.Right" />
-    <Handle type="target" :position="Position.Left" />
-  </ElCard>
+  </Card>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .canvas-node {
-  border-radius: 20px;
-  background-color: transparent;
+  border-radius: 18px;
   position: relative;
   overflow: visible;
   box-sizing: content-box;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(245, 246, 250, 0.9));
 
   .node-body {
     padding: 0;
     overflow: hidden;
+    border-radius: 16px;
   }
 
-  &.empty {
-    background-color: #fff;
+  &.is-empty {
+    background: linear-gradient(180deg, rgba(249, 250, 251, 0.94), rgba(243, 244, 246, 0.92));
   }
 
   .node-border {
-    display: none;
+    opacity: 0;
     position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-
-    border: 4px solid rgb(225, 225, 225);
-    border-radius: 20px;
-
+    inset: 0;
+    border: 2px solid rgba(99, 102, 241, 0.55);
+    border-radius: 18px;
     pointer-events: none;
+    transition:
+      opacity 150ms ease,
+      box-shadow 150ms ease;
+    box-shadow:
+      0 0 0 6px rgba(99, 102, 241, 0.18),
+      0 8px 24px rgba(0, 0, 0, 0.08);
   }
-  &.active {
-    .node-border {
-      display: block;
-    }
+
+  &:hover .node-border {
+    opacity: 0.7;
+    box-shadow:
+      0 0 0 6px rgba(59, 130, 246, 0.18),
+      0 10px 28px rgba(0, 0, 0, 0.12);
   }
 
-  .tools {
-    position: absolute;
-    top: -48px;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    height: 40px;
+  &.is-active .node-border {
+    opacity: 1;
+    box-shadow:
+      0 0 0 7px rgba(59, 130, 246, 0.28),
+      0 14px 34px rgba(0, 0, 0, 0.16);
+  }
 
-    border-radius: 8px;
-    background-color: rgba(225, 225, 225, 0.85);
-
-    display: flex;
+  .toolbar-title {
+    display: inline-flex;
     align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    cursor: text;
+    min-width: 96px;
 
-    padding-left: 8px;
-    padding-right: 8px;
+    .title-text {
+      font-size: 13px;
+      color: #0f172a;
+      white-space: nowrap;
+    }
   }
 
   .bg-wrapper {
     position: relative;
     overflow: hidden;
-    border-radius: 20px;
+    border-radius: 16px;
+
+    img.bg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .empty-content {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 250, 252, 0.82));
+    border: 1px dashed rgba(148, 163, 184, 0.7);
+    border-radius: 16px;
+    backdrop-filter: blur(4px);
   }
 
   .node-processing {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 20px;
+    inset: 0;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.15), transparent 40%),
+      radial-gradient(circle at 70% 70%, rgba(59, 130, 246, 0.12), transparent 45%),
+      rgba(15, 23, 42, 0.78);
+    border-radius: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 100;
+    gap: 12px;
 
     .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
+      width: 42px;
+      height: 42px;
+      border: 4px solid #e2e8f0;
+      border-top: 4px solid #4f46e5;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 12px;
+      animation: spin 0.9s linear infinite;
     }
 
     .loading-text {
-      color: white;
+      color: #e2e8f0;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
   }
 
-  &.processing {
+  &.is-processing {
     pointer-events: none;
+    filter: saturate(0.8);
   }
 
   @keyframes spin {
@@ -372,26 +455,6 @@ useDesignNode({
     }
     100% {
       transform: rotate(360deg);
-    }
-  }
-
-  .image-error {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 20px;
-    z-index: 50;
-
-    .error-text {
-      color: #ff4444;
-      font-size: 14px;
-      font-weight: 500;
     }
   }
 }

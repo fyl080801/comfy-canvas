@@ -10,8 +10,8 @@ import SpecialEdge from './components/SpecialEdge.vue'
 import LeaferNode from './components/LeaferNode.vue'
 import DropzoneBackground from './components/DropzoneBackground.vue'
 import ToolsPanel from './components/ToolsPanel.vue'
-import { ElButton } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-vue-next'
 import { useDesignCanvas, type DesignContext } from './hooks/canvas'
 import type { LeaferNodeProps } from './lib/types'
 
@@ -116,7 +116,9 @@ useDesignCanvas({
       </template> -->
 
       <ToolsPanel>
-        <ElButton link :icon="Plus" @click="onAdd"> </ElButton>
+        <Button variant="ghost" size="icon" @click="onAdd">
+          <Plus class="h-4 w-4" />
+        </Button>
       </ToolsPanel>
 
       <DropzoneBackground> </DropzoneBackground>

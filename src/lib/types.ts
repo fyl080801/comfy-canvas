@@ -1,4 +1,3 @@
-import type { SubmitResult } from 'vue-element-plus-x/types/EditorSender'
 import type { IEventEmitter } from './EventEmitter'
 
 // 定義任務狀態接口
@@ -67,6 +66,7 @@ export interface LeaferNodeProps {
   providerProps?: any
   initImageUrl?: string
   process?: () => Promise<string | undefined> // 先默认必须返回一个imageurl
+  title?: string
 }
 
 export type EditTypes = 'redraw' | 'eraser' | 'hd' | 'extend'

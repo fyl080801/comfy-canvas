@@ -3,7 +3,9 @@ import { useIsActive, useIsEmpty, useCurrentEditType, useIsProcessing } from '@/
 import type { EditTypes, LeaferNodeProps } from '@/lib/types'
 import { Position, useVueFlow, type NodeProps } from '@vue-flow/core'
 import { NodeToolbar } from '@vue-flow/node-toolbar'
-import { ElButton, ElCard } from 'element-plus'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Brush, Eraser, ZoomIn, Expand } from 'lucide-vue-next'
 
 defineProps<NodeProps<LeaferNodeProps>>()
 
@@ -26,37 +28,47 @@ const onEdit = (type: EditTypes) => {
 </script>
 
 <template>
-  <NodeToolbar :is-visible="isActive && !isEmpty && !isProcessing" :position="Position.Top">
-    <ElCard class="node-tools" body-class="node-tools__body">
-      <ElButton
-        text
-        :type="editType === 'redraw' ? 'primary' : 'default'"
-        :bg="editType === 'redraw'"
-        @click="onEdit('redraw')"
-        >重绘</ElButton
-      >
-      <ElButton
-        text
-        :type="editType === 'eraser' ? 'primary' : 'default'"
-        :bg="editType === 'eraser'"
-        @click="onEdit('eraser')"
-        >擦除</ElButton
-      >
-      <ElButton
-        text
-        :type="editType === 'hd' ? 'primary' : 'default'"
-        :bg="editType === 'hd'"
-        @click="onEdit('hd')"
-        >超分</ElButton
-      >
-      <ElButton
-        text
-        :type="editType === 'extend' ? 'primary' : 'default'"
-        :bg="editType === 'extend'"
-        @click="onEdit('extend')"
-        >扩图</ElButton
-      >
-    </ElCard>
+  <NodeToolbar
+    :is-visible="isActive && !isEmpty && !isProcessing"
+    :offset="40"
+    :position="Position.Top"
+  >
+    <Card class="node-tools border-border/80 shadow-sm">
+      <CardContent class="node-tools__body">
+        <Button
+          :variant="editType === 'redraw' ? 'default' : 'outline'"
+          size="sm"
+          @click="onEdit('redraw')"
+        >
+          <Brush class="w-4 h-4 mr-1" />
+          重绘
+        </Button>
+        <Button
+          :variant="editType === 'eraser' ? 'default' : 'outline'"
+          size="sm"
+          @click="onEdit('eraser')"
+        >
+          <Eraser class="w-4 h-4 mr-1" />
+          擦除
+        </Button>
+        <Button
+          :variant="editType === 'hd' ? 'default' : 'outline'"
+          size="sm"
+          @click="onEdit('hd')"
+        >
+          <ZoomIn class="w-4 h-4 mr-1" />
+          超分
+        </Button>
+        <Button
+          :variant="editType === 'extend' ? 'default' : 'outline'"
+          size="sm"
+          @click="onEdit('extend')"
+        >
+          <Expand class="w-4 h-4 mr-1" />
+          扩图
+        </Button>
+      </CardContent>
+    </Card>
   </NodeToolbar>
 </template>
 
@@ -66,6 +78,7 @@ const onEdit = (type: EditTypes) => {
     padding: 8px;
     display: flex;
     align-items: center;
+    gap: 8px;
   }
 }
 </style>
