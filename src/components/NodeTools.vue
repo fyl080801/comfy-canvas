@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { useIsActive, useIsEmpty, useCurrentEditType, useIsProcessing } from '@/hooks/canvas'
+import {
+  useIsActive,
+  useIsEmpty,
+  useCurrentEditType,
+  useIsProcessing,
+  useDesignNode,
+} from '@/hooks/canvas'
 import type { EditTypes, LeaferNodeProps } from '@/lib/types'
 import { Position, useVueFlow, type NodeProps } from '@vue-flow/core'
 import { NodeToolbar } from '@vue-flow/node-toolbar'
@@ -13,6 +19,8 @@ const emit = defineEmits(['change-type'])
 
 const {} = useVueFlow()
 
+const { emit: nodeEmit, id: nodeId, imageUrl } = useDesignNode()
+
 const isActive = useIsActive()
 const isEmpty = useIsEmpty()
 const isProcessing = useIsProcessing()
@@ -25,6 +33,13 @@ const onEdit = (type: EditTypes) => {
     emit('change-type', null)
   }
 }
+
+// const onTest = () => {
+//   nodeEmit('next', nodeId, {
+//     initImageUrl: imageUrl.value,
+//     provider: 'aliyun',
+//   })
+// }
 </script>
 
 <template>
@@ -67,6 +82,9 @@ const onEdit = (type: EditTypes) => {
           <Expand class="w-4 h-4 mr-1" />
           扩图
         </Button>
+        <!-- <Button :variant="editType === 'extend' ? 'default' : 'outline'" size="sm" @click="onTest">
+          测试
+        </Button> -->
       </CardContent>
     </Card>
   </NodeToolbar>

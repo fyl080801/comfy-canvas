@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { nextTick, reactive, ref } from 'vue'
 import type { Node, Edge } from '@vue-flow/core'
 import { useVueFlow, VueFlow } from '@vue-flow/core'
 
@@ -17,7 +17,7 @@ import type { LeaferNodeProps } from './lib/types'
 
 // these are our nodes
 
-const { addNodes, addEdges } = useVueFlow()
+const { addNodes, addEdges, findNode, setCenter } = useVueFlow()
 
 const context = reactive<DesignContext>({
   activeNodeId: null,
@@ -55,15 +55,22 @@ const onPaneClick = () => {
   context.activeNodeId = null
 }
 
-const onNextNode = (id: string, payload: any) => {
+const onNextNode = async (id: string, payload: any) => {
   const newId = crypto.randomUUID()
+
+  const old = findNode(id)
+
+  const position = {
+    x: (old?.position.x ?? 900) + (old?.dimensions.width ?? 500) + 100,
+    y: old?.position.y ?? 500,
+  }
 
   addNodes([
     {
       id: newId,
       type: 'leafer',
-      position: { x: 900, y: 200 },
-      data: { provider: 'aliyun', ...payload },
+      position,
+      data: { provider: 'aliyun', ...payload },      
     },
   ])
 
@@ -74,6 +81,19 @@ const onNextNode = (id: string, payload: any) => {
       target: newId,
     },
   ])
+
+  await nextTick()
+
+  const newNode = findNode(newId)
+
+  if (newNode) {
+    setCenter(
+      newNode.position.x + newNode.dimensions.width / 2,
+      newNode.position.y + newNode.dimensions.height / 2,
+      { zoom: 1,duration: 500, 
+     },
+    )
+  }
 }
 
 useDesignCanvas({

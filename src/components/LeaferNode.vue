@@ -220,8 +220,8 @@ watch(
 const beginEditTitle = async () => {
   isEditingTitle.value = true
   await nextTick()
-  titleInputRef.value?.focus()
-  titleInputRef.value?.select()
+  // titleInputRef.value?.focus()
+  // titleInputRef.value?.select()
 }
 
 const finishEditTitle = () => {
@@ -306,7 +306,7 @@ useDesignNode({
       </div>
 
       <NodeTools v-bind="$props" @change-type="onChangeType"></NodeTools>
-      <NodeToolbar :is-visible="true" align="start">
+      <NodeToolbar :is-visible="isActive" align="start">
         <div class="toolbar-title" @click="!isEditingTitle && beginEditTitle()">
           <Input
             v-if="isEditingTitle"
